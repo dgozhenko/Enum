@@ -44,14 +44,17 @@ import com.raywenderlich.android.cartoonsocialclub.databinding.ListItemAvatarBin
 
 // TODO 1 : replace this dataclass with one using an Enum.
 data class Item(
-    @DrawableRes val imageResource: Int,
+    val avatar: CartoonAvatar,
     var isSelected: Boolean
-)
+) {
+    @DrawableRes
+    var imageResourceBundle = avatar.drawableRes
+}
 
 class ViewHolder private constructor(val binding: ListItemAvatarBinding) :
     RecyclerView.ViewHolder(binding.root) {
   fun bind(item: Item) {
-    binding.avatarThumbnailImageView.setImageResource(item.imageResource)
+    binding.avatarThumbnailImageView.setImageResource(item.imageResourceBundle)
     val backgroundColor = if (item.isSelected) R.color.colorSelectionBackground else android.R
         .color.transparent
     binding.root.setBackgroundResource(backgroundColor)
@@ -86,7 +89,7 @@ class CartoonAvatarAdapter(
 
 private class CartoonAvatarItemDiffCallback : DiffUtil.ItemCallback<Item>() {
   override fun areItemsTheSame(oldItem: Item, newItem: Item) =
-      oldItem.imageResource == newItem.imageResource
+      oldItem.imageResourceBundle == newItem.imageResourceBundle
 
   override fun areContentsTheSame(oldItem: Item, newItem: Item) =
       oldItem == newItem

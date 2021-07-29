@@ -39,6 +39,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.raywenderlich.android.cartoonsocialclub.databinding.ActivityMainBinding
 
@@ -53,10 +54,11 @@ class MainActivity : AppCompatActivity() {
 
   private lateinit var cartoonAvatarAdapter: CartoonAvatarAdapter
 
-  // TODO 3 : Add a variable to keep track of selected avatar.
+  private var selectedAvatar: CartoonAvatar? = null
 
-  // TODO 2 : Populate the list with all values of the CartoonAvatar Enum values.
-  private var avatarChoices = emptyList<Item>()
+  private var avatarChoices = CartoonAvatar.values().map {
+    Item(it, false)
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     // Switch to AppTheme for displaying the activity
@@ -73,15 +75,37 @@ class MainActivity : AppCompatActivity() {
 
     // Hide the "Continue" button while nothing is selected
     continueButton.visibility = View.GONE
+    setupContinueButton()
 
-    // TODO 7 : Add a call to the setupContinueButton function here.
+  }
+
+  private fun setupContinueButton() {
+    fullNameEditText.doAfterTextChanged {
+      if (it.toString().isNotBlank() && selectedAvatar != null) {
+        continueButton.visibility = View.VISIBLE
+      } else {
+        continueButton.visibility = View.GONE
+      }
+    }
+
+    continueButton.setOnClickListener {
+      val selectedAvatar = selectedAvatar ?: return@setOnClickListener
+      val firstName = fullNameEditText.text.toString()
+      val intent = AvatarSelectedActivity.newIntent(firstName, selectedAvatar, this)
+      startActivity(intent)
+    }
   }
 
   private fun selectAvatar(avatar: Item) {
-    // TODO 4 : Implement method when a new avatar is selected.
+    selectedAvatar = avatar.avatar
+    avatarChoices.forEach{
+      it.isSelected = it.avatar == selectedAvatar
+    }
+    cartoonAvatarAdapter.notifyDataSetChanged()
+    if (fullNameEditText.text.isNotBlank()) {
+      continueButton.visibility = View.VISIBLE
+    }
   }
-
-  // TODO 6 : Add the setupContinueButton function to display AvatarSelectedActivity on click.
 
   private fun setupRecyclerView() {
     cartoonAvatarAdapter = CartoonAvatarAdapter(onItemClick = { avatar ->

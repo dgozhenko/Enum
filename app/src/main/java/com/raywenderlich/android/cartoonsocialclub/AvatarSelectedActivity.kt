@@ -34,7 +34,10 @@
 
 package com.raywenderlich.android.cartoonsocialclub
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -63,12 +66,46 @@ class AvatarSelectedActivity : AppCompatActivity() {
     initialTextView = binding.initialTextView
     selectedAvatarDescriptionTextView = binding.selectedAvatarDescriptionTextView
 
-    // TODO 10 : Add a call to the loadDataFromIntent function here.
+    loadDataFromIntent()
   }
 
-  // TODO 9 : Add the loadDataFromIntent to read Intent data to be displayed in the view.
+  private fun loadDataFromIntent() {
+    val extras = intent.extras
+    val fullName = extras?.getString(EXTRA_FULL_NAME)
+    val cartoonEnumCase = extras?.getString(EXTRA_CARTOON)
+    if (cartoonEnumCase == null) {
+      finish()
+      return
+    }
+    val cartoonAvatar = CartoonAvatar.valueOf(cartoonEnumCase)
+    populateView(fullName ?: "", cartoonAvatar)
+  }
 
-  // TODO 8 : Add the populateView function to display infos about the selected avatar.
+  private fun populateView(fullName: String, cartoonAvatar: CartoonAvatar) {
+    fullNameTextView.text = fullName
+    selectedAvatarDescriptionTextView.text = cartoonAvatar.selectionDescription(this)
+    when (cartoonAvatar) {
+      CartoonAvatar.NONE -> {
+        initialTextView.text = fullName.uppercasedInitial()
+        selectedAvatarImageView.visibility = View.GONE
+        initialTextView.visibility = View.VISIBLE
+      } else -> {
+        selectedAvatarImageView.setImageResource(cartoonAvatar.drawableRes)
+      selectedAvatarImageView.visibility = View.VISIBLE
+      initialTextView.visibility = View.GONE
+      }
+    }
+  }
 
-  // TODO 5 : Add the companion object and newIntent function.
+  companion object {
+    private const val EXTRA_FULL_NAME = "com.raywenderlich.android.cartoonsocialclub.FULL_NAME"
+    private const val EXTRA_CARTOON = "com.raywenderlich.android.cartoonsocialclub.CARTOON"
+
+    fun newIntent(fullName: String, selectedAvatar: CartoonAvatar, context: Context): Intent {
+      return Intent(context, AvatarSelectedActivity::class.java).apply {
+        putExtra(EXTRA_FULL_NAME, fullName)
+        putExtra(EXTRA_CARTOON, selectedAvatar.name)
+      }
+    }
+  }
 }
